@@ -216,7 +216,7 @@
             // Открыть модальное окно результата
             document.getElementById("result-modal").style.display = "block";
 
-            if (percentageScore == 1) {
+            if (percentageScore == 100) {
                 const defaults = {
                     spread: 360,
                     ticks: 50,
@@ -247,7 +247,7 @@
                 setTimeout(shoot, 100);
                 setTimeout(shoot, 200);
 
-            } else if (percentageScore >= 1) {
+            } else if (percentageScore >= 90) {
                 const end = Date.now() + 5 * 1000;
 
                 // go Buckeyes!
@@ -274,7 +274,7 @@
                         requestAnimationFrame(frame);
                     }
                 })();
-            } else if (percentageScore >= 0) {
+            } else if (percentageScore >= 70) {
                 const duration = 5 * 1000,
                 animationEnd = Date.now() + duration,
                 defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
