@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz</title>
+    <link rel="icon" type="image/png" href="media/luminos.svg">
+    <script src="https://cdn.jsdelivr.net/npm/@tsparticles/confetti@3.0.3/tsparticles.confetti.bundle.min.js"></script>
+    <script>
+        function includeHTML() {
+            const elements = document.querySelectorAll('[data-include]');
+            elements.forEach((el) => {
+                const file = el.getAttribute('data-include');
+                fetch(file)
+                .then((response) => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.text();
+                })
+                .then((data) => {
+                    el.innerHTML = data;
+                    el.removeAttribute('data-include');
+                    el.style.height = ''; 
+                    setActiveLink();
+                })
+                .catch((error) => {
+                    console.error('Error including HTML:', error);
+                });
+            });
+        }
+
+        function setActiveLink() {
+            const currentPage = window.location.pathname.split('/').pop();
+            const navLinks = document.querySelectorAll('.custom-nav-link');
+
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPage || (currentPage === "" && link.getAttribute('href') === "index.html")) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        let currentPage = 1;
+        const questionsPerPage = 5;
+        const totalQuestions = 30;
+        const totalPages = Math.ceil(totalQuestions / questionsPerPage);
+
+        function showPage(page) {
+            currentPage = page;
+            const allQuestions = document.querySelectorAll('.quiz-question');
+            allQuestions.forEach((question, index) => {
+                const questionNumber = index + 1;
+                if (questionNumber > (page - 1) * questionsPerPage && questionNumber <= page * questionsPerPage) {
+                    question.style.display = 'block';
+                } else {
+                    question.style.display = 'none';
+                }
+            });
+            updateNavigationButtons();
+        }
+
+        function updateNavigationButtons() {
+            document.getElementById('page-number').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prev-button').disabled = currentPage === 1;
+            document.getElementById('next-button').disabled = currentPage === totalPages;
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                showPage(currentPage + 1);
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                showPage(currentPage - 1);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            includeHTML();
+            showPage(currentPage);
+        });
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('fade-out');
+            modal.style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('fade-out');
+
+            // Wait for the fade-out animation to finish before hiding the modal
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modal.classList.remove('fade-out');
+            }, 400);
+        }
+
+        function handleLogin() {
+            // Здесь будет логика аутентификации, пока что просто закрываем окно и меняем кнопку
+            closeModal('loginModal');
+            document.getElementById('auth-button').textContent = 'My Profile';
+            document.getElementById('auth-button').onclick = () => openModal('profileModal');
+        }
+
+        function handleSignup() {
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const passwordError = document.getElementById('password-error');
+
+            if (password !== confirmPassword) {
+                passwordError.style.display = 'block';
+                document.getElementById('signup-password').value = '';
+                document.getElementById('confirm-password').value = '';
+                return;
+            }
+
+            passwordError.style.display = 'none';
+            // Логика регистрации
+            closeModal('signupModal');
+            document.getElementById('auth-button').textContent = 'My Profile';
+            document.getElementById('auth-button').onclick = () => openModal('profileModal');
+
+            // Сохранение информации о пользователе для профиля
+            document.getElementById('profile-firstname').textContent = document.getElementById('firstname').value;
+            document.getElementById('profile-lastname').textContent = document.getElementById('lastname').value;
+            document.getElementById('profile-middlename').textContent = document.getElementById('middlename').value;
+            document.getElementById('profile-address').textContent = document.getElementById('address').value;
+            document.getElementById('profile-postalcode').textContent = document.getElementById('postalcode').value;
+            document.getElementById('profile-phone').textContent = document.getElementById('phone').value;
+            document.getElementById('profile-email').textContent = document.getElementById('signup-email').value;
+        }
+
+        function openProfile() {
+            openModal('profileModal');
+        }
+
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.profile-section');
+            sections.forEach(section => section.style.display = 'none');
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        function sendSupportMessage() {
+            const input = document.getElementById('support-input');
+            const message = input.value;
+            if (message.trim() !== '') {
+                const chat = document.getElementById('support-chat');
+                const userMessage = document.createElement('p');
+                userMessage.innerHTML = `<strong>You:</strong> ${message}`;
+                chat.appendChild(userMessage);
+                input.value = '';
+
+                // Ответ бота (упрощенный)
+                const botMessage = document.createElement('p');
+                botMessage.innerHTML = `<strong>Bot:</strong> Thank you for your message. Our support team will contact you shortly.`;
+                chat.appendChild(botMessage);
+            }
+        }
+
+        // Закрытие модального окна при клике вне его
+        document.addEventListener('click', function (event) {
+            const modals = ['loginModal', 'signupModal', 'buyModal', 'profileModal'];
+
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (modal && event.target === modal) {
+                    closeModal(modalId);
+                }
+            });
+        });
+
+        function checkAnswers() {
+            let score = 0;
+            const totalQuestions = 30;
+            
+            if (document.querySelector('input[name="q1"]:checked')?.value === "voice") score++;
+            if (document.querySelector('input[name="q2"]:checked')?.value === "wifi") score++;
+            if (document.querySelector('input[name="q3"]:checked')?.value === "energy") score++;
+            if (document.querySelector('input[name="q4"]:checked')?.value === "yes") score++;
+            if (document.querySelector('input[name="q5"]:checked')?.value === "scene") score++;
+            if (document.querySelector('input[name="q6"]:checked')?.value === "remote") score++;
+            if (document.querySelector('input[name="q7"]:checked')?.value === "surveillance") score++;
+            if (document.querySelector('input[name="q8"]:checked')?.value === "lowerTemp") score++;
+            if (document.querySelector('input[name="q9"]:checked')?.value === "both") score++;
+            if (document.querySelector('input[name="q10"]:checked')?.value === "schedule") score++;
+            if (document.querySelector('input[name="q11"]:checked')?.value === "light") score++;
+            if (document.querySelector('input[name="q12"]:checked')?.value === "plug") score++;
+            if (document.querySelector('input[name="q13"]:checked')?.value === "clean") score++;
+            if (document.querySelector('input[name="q14"]:checked')?.value === "adjust") score++;
+            if (document.querySelector('input[name="q15"]:checked')?.value === "detect") score++;
+            if (document.querySelector('input[name="q16"]:checked')?.value === "stream") score++;
+            if (document.querySelector('input[name="q17"]:checked')?.value === "alert") score++;
+            if (document.querySelector('input[name="q18"]:checked')?.value === "color") score++;
+            if (document.querySelector('input[name="q19"]:checked')?.value === "voice") score++;
+            if (document.querySelector('input[name="q20"]:checked')?.value === "plug") score++;
+            if (document.querySelector('input[name="q21"]:checked')?.value === "order") score++;
+            if (document.querySelector('input[name="q22"]:checked')?.value === "control") score++;
+            if (document.querySelector('input[name="q23"]:checked')?.value === "alexa") score++;
+            if (document.querySelector('input[name="q24"]:checked')?.value === "open") score++;
+            if (document.querySelector('input[name="q25"]:checked')?.value === "watering") score++;
+            if (document.querySelector('input[name="q26"]:checked')?.value === "video") score++;
+            if (document.querySelector('input[name="q27"]:checked')?.value === "automaticOff") score++;
+            if (document.querySelector('input[name="q28"]:checked')?.value === "location") score++;
+            if (document.querySelector('input[name="q29"]:checked')?.value === "sensors") score++;
+            if (document.querySelector('input[name="q30"]:checked')?.value === "leak") score++;
+            
+            const percentageScore = (score / totalQuestions) * 100;
+
+            // Показать результаты в кастомном модальном окне
+            document.getElementById("result-text").textContent =
+                `You got ${score} out of ${totalQuestions} correct. It is ${percentageScore}%.`;
+
+            // Открыть модальное окно результата
+            document.getElementById("result-modal").style.display = "block";
+
+            if (percentageScore == 1) {
+                const defaults = {
+                    spread: 360,
+                    ticks: 50,
+                    gravity: 0,
+                    decay: 0.94,
+                    startVelocity: 30,
+                    shapes: ["star"],
+                    colors: ["FFE400", "FFBD00", "E89400", "FFCA6C", "FDFFB8"],
+                };
+
+                function shoot() {
+                    confetti({
+                        ...defaults,
+                        particleCount: 40,
+                        scalar: 1.2,
+                        shapes: ["star"],
+                    });
+
+                    confetti({
+                        ...defaults,
+                        particleCount: 10,
+                        scalar: 0.75,
+                        shapes: ["circle"],
+                    });
+                }
+
+                setTimeout(shoot, 0);
+                setTimeout(shoot, 100);
+                setTimeout(shoot, 200);
+
+            } else if (percentageScore >= 1) {
+                const end = Date.now() + 5 * 1000;
+
+                // go Buckeyes!
+                const colors = ["#0056b3", "green"];
+
+                (function frame() {
+                    confetti({
+                        particleCount: 2,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 },
+                        colors: colors,
+                    });
+
+                    confetti({
+                        particleCount: 2,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 },
+                        colors: colors,
+                    });
+
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    }
+                })();
+            } else if (percentageScore >= 0) {
+                const duration = 5 * 1000,
+                animationEnd = Date.now() + duration,
+                defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+                function randomInRange(min, max) {
+                    return Math.random() * (max - min) + min;
+                }
+
+                const interval = setInterval(function() {
+                    const timeLeft = animationEnd - Date.now();
+
+                    if (timeLeft <= 0) {
+                        return clearInterval(interval);
+                    }
+
+                    const particleCount = 50 * (timeLeft / duration);
+
+                    // since particles fall down, start a bit higher than random
+                    confetti(
+                        Object.assign({}, defaults, {
+                            particleCount,
+                            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+                        })
+                    );
+                    confetti(
+                        Object.assign({}, defaults, {
+                            particleCount,
+                            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+                        })
+                    );
+                }, 250);
+            } else if (percentageScore >= 50) {
+                const count = 200,
+                defaults = {
+                    origin: { y: 0.7 },
+                };
+
+                function fire(particleRatio, opts) {
+                    confetti(
+                        Object.assign({}, defaults, opts, {
+                        particleCount: Math.floor(count * particleRatio),
+                        })
+                    );
+                }
+
+                fire(0.25, {
+                    spread: 26,
+                    startVelocity: 55,
+                });
+
+                fire(0.2, {
+                    spread: 60,
+                });
+
+                fire(0.35, {
+                    spread: 100,
+                    decay: 0.91,
+                    scalar: 0.8,
+                });
+
+                fire(0.1, {
+                    spread: 120,
+                    startVelocity: 25,
+                    decay: 0.92,
+                    scalar: 1.2,
+                });
+
+                fire(0.1, {
+                    spread: 120,
+                    startVelocity: 45,
+                });
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="styles/style.css" type="text/css">
+</head>
+<body>
+
+    <div data-include="partials/header.html" style="height: 73px;"></div>
+
+    <div id="result-modal" class="result-modal" style="display: none;">
+        <div class="result-content">
+            <span class="close" onclick="closeModal('result-modal')">&times;</span>
+            <p id="result-text"></p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Smart Home Technology Quiz</h1>
+        <form id="smart-home-quiz">
+            <div class="quiz-question">
+                <h3>1. What is the main way to control a smart speaker like Smart Speaker X?</h3>
+                <label><input type="radio" name="q1" value="remote"> Remote control</label><br>
+                <label><input type="radio" name="q1" value="voice"> Voice commands</label><br>
+                <label><input type="radio" name="q1" value="manual"> Manual switch</label><br>
+            </div>
+
+            <div class="quiz-question">
+                <h3>2. What type of connectivity is commonly used for smart home devices?</h3>
+                <label><input type="radio" name="q2" value="bluetooth"> Bluetooth</label><br>
+                <label><input type="radio" name="q2" value="wifi"> Wi-Fi</label><br>
+                <label><input type="radio" name="q2" value="nfc"> NFC</label><br>
+            </div>
+            
+            <div class="quiz-question">
+                <h3>3. What is one of the primary benefits of smart thermostats?</h3>
+                <label><input type="radio" name="q3" value="security"> Enhanced security</label><br>
+                <label><input type="radio" name="q3" value="energy"> Energy efficiency</label><br>
+                <label><input type="radio" name="q3" value="entertainment"> Entertainment</label><br>
+            </div>
+            
+            <div class="quiz-question">
+                <h3>4. Can you schedule your smart lights to turn on and off automatically?</h3>
+                <label><input type="radio" name="q4" value="yes"> Yes</label><br>
+                <label><input type="radio" name="q4" value="no"> No</label><br>
+            </div>
+            
+            <div class="quiz-question">
+                <h3>5. What is the feature called that allows multiple devices to work together to create a specific environment (e.g., lights dimming and music playing for a movie night)?</h3>
+                <label><input type="radio" name="q5" value="group"> Group control</label><br>
+                <label><input type="radio" name="q5" value="scene"> Scene</label><br>
+                <label><input type="radio" name="q5" value="routine"> Routine</label><br>
+            </div>
+            
+            <div class="quiz-question">
+                <h3>6. What can a smart door lock do?</h3>
+                <label><input type="radio" name="q6" value="remote"> Lock and unlock remotely</label><br>
+                <label><input type="radio" name="q6" value="manual"> Only lock manually</label><br>
+                <label><input type="radio" name="q6" value="alarm"> Send only alarm alerts</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>7. What is a common benefit of smart security cameras?</h3>
+                <label><input type="radio" name="q7" value="wifi"> Improved Wi-Fi signal</label><br>
+                <label><input type="radio" name="q7" value="surveillance"> Remote surveillance</label><br>
+                <label><input type="radio" name="q7" value="music"> Play music</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>8. How can a smart thermostat help save energy?</h3>
+                <label><input type="radio" name="q8" value="lowerTemp"> Automatically lowering temperature when no one is home</label><br>
+                <label><input type="radio" name="q8" value="increaseTemp"> Always keeping a high temperature</label><br>
+                <label><input type="radio" name="q8" value="noChange"> No impact on temperature</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>9. Which of these is a smart home voice assistant?</h3>
+                <label><input type="radio" name="q9" value="google"> Google Assistant</label><br>
+                <label><input type="radio" name="q9" value="siri"> Siri</label><br>
+                <label><input type="radio" name="q9" value="both"> Both</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>10. What feature can a smart plug provide?</h3>
+                <label><input type="radio" name="q10" value="schedule"> Scheduling power on/off</label><br>
+                <label><input type="radio" name="q10" value="wifi"> Boost Wi-Fi</label><br>
+                <label><input type="radio" name="q10" value="volume"> Control speaker volume</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>11. What type of device can automate your lighting at home?</h3>
+                <label><input type="radio" name="q11" value="lock"> Smart Lock</label><br>
+                <label><input type="radio" name="q11" value="light"> Smart Light</label><br>
+                <label><input type="radio" name="q11" value="oven"> Smart Oven</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>12. Which technology can help you monitor energy usage?</h3>
+                <label><input type="radio" name="q12" value="thermo"> Smart Thermostat</label><br>
+                <label><input type="radio" name="q12" value="camera"> Smart Camera</label><br>
+                <label><input type="radio" name="q12" value="plug"> Smart Plug</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>13. What can a smart vacuum do?</h3>
+                <label><input type="radio" name="q13" value="clean"> Automatically clean your floors</label><br>
+                <label><input type="radio" name="q13" value="cook"> Cook food</label><br>
+                <label><input type="radio" name="q13" value="water"> Water plants</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>14. Which of the following is a benefit of smart blinds?</h3>
+                <label><input type="radio" name="q14" value="adjust"> Automatic adjustment based on sunlight</label><br>
+                <label><input type="radio" name="q14" value="sound"> Produce sound effects</label><br>
+                <label><input type="radio" name="q14" value="security"> Enhance home security</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>15. What do motion sensors do?</h3>
+                <label><input type="radio" name="q15" value="detect"> Detect movement</label><br>
+                <label><input type="radio" name="q15" value="cook"> Cook food</label><br>
+                <label><input type="radio" name="q15" value="clean"> Clean the floor</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>16. How can smart cameras help when you’re away from home?</h3>
+                <label><input type="radio" name="q16" value="stream"> Stream live video to your phone</label><br>
+                <label><input type="radio" name="q16" value="sing"> Play songs</label><br>
+                <label><input type="radio" name="q16" value="cook"> Cook dinner</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>17. What is a typical use of a smart smoke detector?</h3>
+                <label><input type="radio" name="q17" value="alert"> Provide alerts in case of smoke or fire</label><br>
+                <label><input type="radio" name="q17" value="light"> Act as a light source</label><br>
+                <label><input type="radio" name="q17" value="tv"> Control your TV</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>18. What can you use a smart light bulb for?</h3>
+                <label><input type="radio" name="q18" value="color"> Change colors and brightness via an app</label><br>
+                <label><input type="radio" name="q18" value="music"> Play music</label><br>
+                <label><input type="radio" name="q18" value="heat"> Heat the room</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>19. How can you control a smart home thermostat?</h3>
+                <label><input type="radio" name="q19" value="voice"> With a mobile app or voice commands</label><br>
+                <label><input type="radio" name="q19" value="button"> Only with a physical button</label><br>
+                <label><input type="radio" name="q19" value="switch"> Through a light switch</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>20. Which device helps with home automation by turning other appliances into smart devices?</h3>
+                <label><input type="radio" name="q20" value="plug"> Smart Plug</label><br>
+                <label><input type="radio" name="q20" value="camera"> Smart Camera</label><br>
+                <label><input type="radio" name="q20" value="oven"> Smart Oven</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>21. What feature does a smart fridge commonly offer?</h3>
+                <label><input type="radio" name="q21" value="order"> Food inventory tracking and shopping list integration</label><br>
+                <label><input type="radio" name="q21" value="microwave"> Microwave cooking</label><br>
+                <label><input type="radio" name="q21" value="tv"> Act as a TV</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>22. What is a smart hub?</h3>
+                <label><input type="radio" name="q22" value="control"> A device that connects and controls multiple smart devices</label><br>
+                <label><input type="radio" name="q22" value="lamp"> A smart lamp</label><br>
+                <label><input type="radio" name="q22" value="chair"> A smart chair</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>23. Which voice assistant is compatible with most smart home devices?</h3>
+                <label><input type="radio" name="q23" value="alexa"> Amazon Alexa</label><br>
+                <label><input type="radio" name="q23" value="cortana"> Cortana</label><br>
+                <label><input type="radio" name="q23" value="bixby"> Bixby</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>24. What is the main function of a smart curtain motor?</h3>
+                <label><input type="radio" name="q24" value="open"> Open and close curtains automatically</label><br>
+                <label><input type="radio" name="q24" value="clean"> Clean the curtains</label><br>
+                <label><input type="radio" name="q24" value="heat"> Heat the room</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>25. Which technology can automatically water your plants?</h3>
+                <label><input type="radio" name="q25" value="watering"> Smart Irrigation System</label><br>
+                <label><input type="radio" name="q25" value="camera"> Smart Camera</label><br>
+                <label><input type="radio" name="q25" value="light"> Smart Light</label><br>
+            </div>
+            
+            <div class="quiz-question">
+                <h3>26. What is one way a smart home can enhance security?</h3>
+                <label><input type="radio" name="q26" value="video"> Video surveillance with smart cameras</label><br>
+                <label><input type="radio" name="q26" value="temperature"> Automatically adjust temperature</label><br>
+                <label><input type="radio" name="q26" value="vacuum"> Vacuum the floor automatically</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>27. How can smart lights contribute to energy efficiency?</h3>
+                <label><input type="radio" name="q27" value="automaticOff"> Automatically turning off when no one is in the room</label><br>
+                <label><input type="radio" name="q27" value="changeColor"> Changing color for decoration</label><br>
+                <label><input type="radio" name="q27" value="playMusic"> Playing music through the lights</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>28. What is geofencing in a smart home context?</h3>
+                <label><input type="radio" name="q28" value="location"> Automating tasks based on your phone's location</label><br>
+                <label><input type="radio" name="q28" value="audio"> Connecting speakers wirelessly</label><br>
+                <label><input type="radio" name="q28" value="camera"> Activating cameras only during the day</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>29. How can a smart home thermostat learn your preferences?</h3>
+                <label><input type="radio" name="q29" value="sensors"> By using built-in sensors and tracking your manual adjustments</label><br>
+                <label><input type="radio" name="q29" value="light"> Through light sensors</label><br>
+                <label><input type="radio" name="q29" value="wifi"> By connecting to Wi-Fi only</label><br>
+            </div>
+    
+            <div class="quiz-question">
+                <h3>30. What is the purpose of a smart leak detector?</h3>
+                <label><input type="radio" name="q30" value="leak"> Detecting water leaks and alerting you</label><br>
+                <label><input type="radio" name="q30" value="heat"> Heating the room when a leak is detected</label><br>
+                <label><input type="radio" name="q30" value="music"> Playing music when water is detected</label><br>
+            </div>    
+
+            <br>
+            <div id="navigation">
+                <button type="button" id="prev-button" onclick="prevPage()">Previous</button>
+                <span id="page-number">Page 1 of 6</span>
+                <button type="button" id="next-button" onclick="nextPage()">Next</button>
+            </div>
+
+            <br>
+            <button class="button" type="button" onclick="checkAnswers()">Submit Answers</button>
+        </form>
+    </div>
+
+    <div data-include="partials/footer.html"></div>
+
+</body>
+</html>

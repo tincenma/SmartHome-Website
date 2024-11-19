@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luminos</title>
+    <link rel="icon" type="image/png" href="media/luminos.svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        function includeHTML() {
+            const elements = document.querySelectorAll('[data-include]');
+            elements.forEach((el) => {
+                const file = el.getAttribute('data-include');
+                fetch(file)
+                .then((response) => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.text();
+                })
+                .then((data) => {
+                    el.innerHTML = data;
+                    el.removeAttribute('data-include');
+                    el.style.height = ''; 
+                    setActiveLink();
+                })
+                .catch((error) => {
+                    console.error('Error including HTML:', error);
+                });
+            });
+        }
+
+        function setActiveLink() {
+            const currentPage = window.location.pathname.split('/').pop();
+            const navLinks = document.querySelectorAll('.custom-nav-link');
+
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPage || (currentPage === "" && link.getAttribute('href') === "index.html")) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            includeHTML();
+            AOS.init({
+                duration: 1000, // Animation duration in milliseconds
+                once: true // Animation happens only once while scrolling
+            });
+        });
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('fade-out');
+            modal.style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('fade-out');
+
+            // Wait for the fade-out animation to finish before hiding the modal
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modal.classList.remove('fade-out');
+            }, 400);
+        }
+
+        function handleLogin() {
+            // Здесь будет логика аутентификации, пока что просто закрываем окно и меняем кнопку
+            closeModal('loginModal');
+            document.getElementById('auth-button').textContent = 'My Profile';
+            document.getElementById('auth-button').onclick = () => openModal('profileModal');
+        }
+
+        function handleSignup() {
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const passwordError = document.getElementById('password-error');
+
+            if (password !== confirmPassword) {
+                passwordError.style.display = 'block';
+                document.getElementById('signup-password').value = '';
+                document.getElementById('confirm-password').value = '';
+                return;
+            }
+
+            passwordError.style.display = 'none';
+            // Логика регистрации
+            closeModal('signupModal');
+            document.getElementById('auth-button').textContent = 'My Profile';
+            document.getElementById('auth-button').onclick = () => openModal('profileModal');
+
+            // Сохранение информации о пользователе для профиля
+            document.getElementById('profile-firstname').textContent = document.getElementById('firstname').value;
+            document.getElementById('profile-lastname').textContent = document.getElementById('lastname').value;
+            document.getElementById('profile-middlename').textContent = document.getElementById('middlename').value;
+            document.getElementById('profile-address').textContent = document.getElementById('address').value;
+            document.getElementById('profile-postalcode').textContent = document.getElementById('postalcode').value;
+            document.getElementById('profile-phone').textContent = document.getElementById('phone').value;
+            document.getElementById('profile-email').textContent = document.getElementById('signup-email').value;
+        }
+
+        function openProfile() {
+            openModal('profileModal');
+        }
+
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.profile-section');
+            sections.forEach(section => section.style.display = 'none');
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        function sendSupportMessage() {
+            const input = document.getElementById('support-input');
+            const message = input.value;
+            if (message.trim() !== '') {
+                const chat = document.getElementById('support-chat');
+                const userMessage = document.createElement('p');
+                userMessage.innerHTML = `<strong>You:</strong> ${message}`;
+                chat.appendChild(userMessage);
+                input.value = '';
+
+                // Ответ бота (упрощенный)
+                const botMessage = document.createElement('p');
+                botMessage.innerHTML = `<strong>Bot:</strong> Thank you for your message. Our support team will contact you shortly.`;
+                chat.appendChild(botMessage);
+            }
+        }
+
+        // Закрытие модального окна при клике вне его
+        document.addEventListener('click', function (event) {
+            const modals = ['loginModal', 'signupModal', 'buyModal', 'profileModal'];
+
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (modal && event.target === modal) {
+                    closeModal(modalId);
+                }
+            });
+        });
+
+    </script>
+    <link rel="stylesheet" href="styles/style.css" type="text/css">
+</head>
+<body>
+
+    <div data-include="partials/header.html" style="height: 73px;"></div>
+
+    <div class="hero-section" style="background: linear-gradient(rgba(0, 86, 179, 0.8), rgba(0, 86, 179, 0.8)), url('media/smarthome.webp') center/cover no-repeat;">
+        <h1 class="">Welcome to the Future of Smart Living with Luminos</h1>
+        <p class="">Luminos brings you the latest in smart home technology.<br>From expert reviews to automation tips, we make it easy to turn your home into a connected sanctuary.</p>
+        <a href="solutions.html" type="button" class="button">
+            Explore
+        </a>
+    </div>
+
+    <!--Benefits of Smart Home Technology-->
+    <div class="container" id="hanging-icons">
+        <h2 class="section-title">Benefits of Smart Home Technology</h2>
+        <div class="custom-row">
+            <div class="content-block">
+                <div>
+                    <h3 class="sub-title">Discover How Smart Devices Transform Your Home</h3>
+                    <p>Our smart home technology offers more than just convenience—it completely transforms your lifestyle. Picture waking up to a home that’s already in tune with your needs: the thermostat adjusts to the perfect temperature, the curtains open automatically to let in the morning light, and the aroma of freshly brewed coffee fills the air. These aren’t dreams—they’re a reality with Luminos. Our smart devices integrate seamlessly to bring efficiency, comfort, and luxury to every part of your daily routine.</p>
+                    <p>Imagine never having to worry about forgetting to lock the doors or leaving the lights on. With Luminos, your home anticipates your needs and makes intelligent decisions on your behalf. Whether it's setting the lights to gradually brighten in the morning to ease you awake, or turning off all non-essential devices when you leave for work, our smart technology works to simplify and enrich your everyday life.</p>
+                    <p>From the moment you step into your home, experience the comfort of an environment that’s perfectly in sync with you. Let Luminos manage your entertainment, adjust your lighting to match your mood, and even suggest routines to make your day more productive. Experience how smart technology not only serves you but becomes an extension of your lifestyle.</p>
+                </div>
+            </div>
+            <div class="content-block">
+                <div>
+                    <h3 class="sub-title">Benefits at a Glance:</h3>
+                    <ul class="benefits-list">
+                        <li>Comfort: Experience tailored comfort with automated climate control, smart lighting, and entertainment systems that adapt to your preferences.</li>
+                        <li>Security: Enjoy peace of mind with advanced surveillance systems, smart door locks, and real-time alerts that ensure your home stays safe—whether you're inside or miles away.</li>
+                        <li>Energy Efficiency: Reduce energy consumption effortlessly with smart thermostats, automated lighting, and energy-saving plugs that help you lower utility costs and protect the environment.</li>
+                        <li>Peace of Mind: With everything at your fingertips, use the Luminos app to monitor and control every aspect of your smart home, from security cameras to kitchen appliances, no matter where you are.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="content-block">
+                <div>
+                    <h3 class="sub-title">Inspiration for Your Home</h3>
+                    <p>Ready to take your home from ordinary to extraordinary? With Luminos, get the creative spark you need to make the most out of your smart home. Transform every moment with just the right settings—whether you’re hosting a dinner party, enjoying family movie night, or winding down after a long day. Customize your environment with scenes that fit your lifestyle.</p>
+                    <p>Imagine dimming the lights and having your favorite playlist start as soon as you sit down to relax in the evening. Program motion sensors to activate the pathway lights when you walk through the hallway late at night. Automate your blinds to open with the sunrise and help you wake up naturally. These little touches make your home feel alive—attentive to your every need.</p>
+                    <p>With Luminos, setting up routines is easy. Synchronize your morning activities, like having your coffee machine start brewing as you step into the shower. Automate energy-saving routines to reduce waste when no one is home. Integrate voice controls for a completely hands-free experience. The possibilities are endless when every device communicates seamlessly to create an environment that is uniquely yours.</p>
+                    <p>Start your journey today towards a smarter, more connected lifestyle. Let Luminos provide the solutions that fit not just your home, but your life. Create a sanctuary of comfort, efficiency, and inspiration that adapts to you every step of the way.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!--Tips for Smart Home Automation-->
+    <div class="container" id="smart-home-tips">
+        <h2 class="section-title">Tips for Smart Home Automation</h2>
+        <div class="custom-row">
+            <div class="content-block" data-aos="fade-up">
+                <h3 class="sub-title">1. Start Small</h3>
+                <p>Begin by automating one room or using a single smart device like a smart speaker. This will help you get comfortable with the technology before expanding to other areas of your home.</p>
+            </div>
+            <div class="content-block" data-aos="fade-up" data-aos-delay="200">
+                <h3 class="sub-title">2. Create Routines for Daily Activities</h3>
+                <p>Automate repetitive tasks, such as turning off lights at night or adjusting the thermostat when you leave the house. Set up routines to make your daily schedule more seamless and efficient.</p>
+            </div>
+            <div class="content-block" data-aos="fade-up" data-aos-delay="300">
+                <h3 class="sub-title">3. Use Voice Assistants for Convenience</h3>
+                <p>Take advantage of voice assistants like Alexa or Google Assistant to control your smart home. It’s one of the easiest ways to interact with your smart devices without lifting a finger.</p>
+            </div>
+            <div class="content-block" data-aos="fade-up" data-aos-delay="400">
+                <h3 class="sub-title">4. Focus on Energy Efficiency</h3>
+                <p>Use smart plugs, smart thermostats, and energy monitors to reduce energy consumption and save money on electricity bills. Set schedules for devices that don't need to be on all the time.</p>
+            </div>
+            <div class="content-block" data-aos="fade-up" data-aos-delay="500">
+                <h3 class="sub-title">5. Ensure Strong Wi-Fi Coverage</h3>
+                <p>Smart devices rely on a good internet connection. Make sure your Wi-Fi signal is strong throughout your home to avoid connectivity issues. Consider mesh Wi-Fi systems if your current router doesn’t cover all areas effectively.</p>
+            </div>
+            <div class="content-block" data-aos="fade-up" data-aos-delay="600">
+                <h3 class="sub-title">6. Secure Your Smart Home</h3>
+                <p>Security is essential in smart homes. Use strong, unique passwords for your devices, and keep your software updated to avoid vulnerabilities. Consider adding two-factor authentication for additional security.</p>
+            </div>
+        </div>
+    </div>    
+
+    <div data-include="partials/footer.html"></div>
+
+</body>
+</html>
