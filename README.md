@@ -54,7 +54,16 @@ This website is aimed at individuals looking to transform their homes into smart
 
 ## Project Structure
 
-SmartHome-Website/ │ ├── index.html # Homepage with an overview of Luminos. ├── solutions.html # Reviews and information on smart home devices. ├── quiz.html # Interactive quiz to test knowledge on smart home technologies. ├── header.html # Common header used across multiple pages. ├── footer.html # Common footer used across multiple pages. ├── styles/ │ └── style.css # Main stylesheet for the website. └── media/ # Images and other media files used in the project.
+SmartHome-Website/ │
+                   ├── index.html # Homepage with an overview of Luminos.
+                   ├── solutions.html # Reviews and information on smart home devices.
+                   ├── quiz.html # Interactive quiz to test knowledge on smart home technologies.
+                   ├── partials/ │
+                                 ├── header.html # Common header used across multiple pages.
+                                 └── footer.html # Common footer used across multiple pages.
+                   ├── styles/ │
+                               └── style.css # Main stylesheet for the website.
+                   └── media/ # Images and other media files used in the project.
 
 ---
 
